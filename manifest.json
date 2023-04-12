@@ -1,0 +1,10 @@
+{
+  "name": "image color separation",
+  "id": "1226926017290517579",
+  "api": "1.0.0",
+  "main": "code.js",
+  "capabilities": [],
+  "enableProposedApi": false,
+  "editorType": ["figma"],
+  "ui": "ui.html"
+}
