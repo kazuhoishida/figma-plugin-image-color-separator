@@ -1,16 +1,32 @@
-<input type="color" id="input-color" value="#FF0000" />
-<label for="input-color">the extract color</label>
-<button id="separateButton">Generate the image</button>
+<div style="margin-bottom: 20px; display: flex; align-items: center; gap: 10px">
+  <input type="color" id="input-color" value="#0000FF" />
+  <label for="input-color">Extract Color:</label>
+</div>
+<div style="margin-bottom: 20px; display: flex; align-items: center; gap: 10px">
+  <input type="range" id="input-number" min="1" max="100" value="50" />
+  <label for="input-number">Sensitivity:</label>
+  <output for="input-number" id="output-number">50</output>
+</div>
+<button id="separateButton" style="padding: 8px">Generate the image</button>
 
 <script>
-  let HEX_COLOR = "#FF0000"
+  let HEX_COLOR = "#0000FF"
+
+  const input = document.getElementById("input-number")
+  const output = document.getElementById("output-number")
+  let sensitivity
+
+  input.addEventListener("input", function (event) {
+    sensitivity = event.target.value
+    output.textContent = sensitivity
+  })
 
   document.getElementById("input-color").onchange = (e) => {
     HEX_COLOR = e.target.value
   }
 
   document.getElementById("separateButton").onclick = () => {
-    parent.postMessage({ pluginMessage: { type: "separate-color-channels", color: HEX_COLOR } }, "*")
+    parent.postMessage({ pluginMessage: { type: "separate-color-channels", color: HEX_COLOR, sensitivity } }, "*")
   }
 
   // Create an event handler to receive messages from the main thread.
@@ -18,6 +34,7 @@
     // Just get the bytes and color from the pluginMessage.
     const bytes = event.data.pluginMessage.bytes
     const hexInputColor = event.data.pluginMessage.color
+    const threshold = event.data.pluginMessage.sensitivity
 
     const canvas = document.createElement("canvas")
     const ctx = canvas.getContext("2d")
@@ -37,7 +54,6 @@
       const diff = Math.sqrt(Math.pow(pixelR - r, 2) + Math.pow(pixelG - g, 2) + Math.pow(pixelB - b, 2))
 
       // If the difference is greater than a threshold, set the pixel to transparent
-      const threshold = 50 // Change this to adjust the sensitivity of the color extraction
       if (diff > threshold) {
         pixels[i + 3] = 0
       }

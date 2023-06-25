@@ -1,18 +1,18 @@
 figma.showUI(__html__)
 
-figma.ui.onmessage = async (msg: { type: string; color: string }) => {
+figma.ui.onmessage = async (msg: { type: string; color: string; sensitivity: number }) => {
   if (msg.type === "separate-color-channels") {
     const selection = figma.currentPage.selection[0] as SceneNode & { fills: readonly ImagePaint[] }
 
     if (selection.fills[0].type === "IMAGE") {
-      await separateImageIntoColorChannels(selection, msg.color)
+      await separateImageIntoColorChannels(selection, msg.color, msg.sensitivity)
     } else {
       figma.ui.postMessage({ type: "error", message: "Please select a Frame or Group containing an image." })
     }
   }
 }
 
-async function separateImageIntoColorChannels(node: SceneNode & { fills: readonly ImagePaint[] }, color: string) {
+async function separateImageIntoColorChannels(node: SceneNode & { fills: readonly ImagePaint[] }, color: string, sensitivity: number) {
   const selectedImage = figma.getImageByHash(node.fills[0].imageHash ?? "")
   if (!selectedImage) return
 
@@ -23,7 +23,7 @@ async function separateImageIntoColorChannels(node: SceneNode & { fills: readonl
   figma.showUI(__html__, { visible: false })
 
   // Send the raw bytes of the file to the worker.
-  figma.ui.postMessage({ bytes, color })
+  figma.ui.postMessage({ bytes, color, sensitivity })
 
   // Wait for the worker's response.
   const newBytes: Uint8Array = await new Promise<Uint8Array>((resolve, reject) => {
